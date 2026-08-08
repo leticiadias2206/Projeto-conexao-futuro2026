@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0f766e">
+<title>Conexão Futuro — Teste de Farmácia</title>
+<style>
+:root{
+  --green:#0f766e; --green2:#14b8a6; --mint:#ecfdf5; --ink:#12302d;
+  --muted:#5f7773; --white:#fff; --line:#d9ece8; --shadow:0 18px 50px rgba(15,118,110,.14);
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+background:linear-gradient(145deg,#f0fdf9 0%,#f8fffd 45%,#e7f8f4 100%);color:var(--ink)}
+.container{width:min(760px,92%);margin:auto}
+header{padding:34px 0 18px;text-align:center}
+.badge{display:inline-block;background:#d9f7ef;color:#08746b;padding:8px 14px;border-radius:999px;font-size:13px;font-weight:800;letter-spacing:.3px}
+h1{font-size:clamp(30px,7vw,52px);line-height:1.02;margin:16px 0 10px}
+.subtitle{color:var(--muted);font-size:16px;line-height:1.55;max-width:600px;margin:auto}
+.card{background:rgba(255,255,255,.94);border:1px solid var(--line);border-radius:28px;box-shadow:var(--shadow);padding:26px;margin:20px 0 36px}
+.topline{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:14px;color:var(--muted);font-size:14px;font-weight:700}
+.progress{height:9px;background:#e6f3f0;border-radius:99px;overflow:hidden;margin-bottom:26px}
+.progress span{display:block;height:100%;background:linear-gradient(90deg,var(--green),var(--green2));width:10%;transition:.3s}
+.question{font-size:23px;line-height:1.25;margin:0 0 20px}
+.options{display:grid;gap:12px}
+.option{border:2px solid #e3efed;background:#fbfefd;border-radius:18px;padding:15px 16px;text-align:left;cursor:pointer;
+font-size:15px;line-height:1.4;color:var(--ink);transition:.18s}
+.option:hover{border-color:#74cfc2;transform:translateY(-1px)}
+.option.selected{border-color:var(--green);background:#e9fbf6;box-shadow:0 0 0 3px rgba(20,184,166,.10)}
+.actions{display:flex;justify-content:space-between;gap:12px;margin-top:22px}
+button{border:0;border-radius:15px;padding:13px 18px;font-weight:800;font-size:15px;cursor:pointer}
+.primary{background:var(--green);color:white;flex:1}.primary:disabled{opacity:.45;cursor:not-allowed}
+.secondary{background:#edf7f5;color:var(--green)}
+.result{text-align:center;padding:8px 0 4px}
+.result-icon{font-size:54px}
+.result h2{font-size:31px;margin:8px 0}
+.area{display:inline-block;background:#d9f7ef;color:#086f66;border-radius:999px;padding:9px 14px;font-weight:900;margin:5px 0 16px}
+.result p{color:var(--muted);line-height:1.65}
+.scorebox{margin:20px 0;padding:18px;border-radius:20px;background:#f3faf8;text-align:left}
+.bar{height:10px;background:#dcecea;border-radius:99px;overflow:hidden;margin-top:7px}
+.bar span{display:block;height:100%;background:linear-gradient(90deg,var(--green),var(--green2));border-radius:99px}
+.small{font-size:12px;color:var(--muted)}
+footer{text-align:center;color:#71908b;font-size:12px;padding:0 0 30px}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<header class="container">
+  <span class="badge">🏫 Projeto Conexão Futuro • Feira de Profissões 2026</span>
+  <h1>Qual área da Farmácia combina com você? 💊</h1>
+  <p class="subtitle">Responda 10 perguntas rápidas e descubra qual perfil profissional mais se aproxima dos seus interesses.</p>
+</header>
+
+<main class="container">
+<section class="card" id="quiz">
+  <div class="topline"><span id="counter">Pergunta 1 de 10</span><span id="percent">10%</span></div>
+  <div class="progress"><span id="progress"></span></div>
+  <h2 class="question" id="question"></h2>
+  <div class="options" id="options"></div>
+  <div class="actions">
+    <button class="secondary" id="back" type="button">← Voltar</button>
+    <button class="primary" id="next" type="button" disabled>Próxima →</button>
+  </div>
+</section>
+
+<section class="card result hidden" id="result">
+  <div class="result-icon">🧪</div>
+  <div class="small">SEU RESULTADO</div>
+  <h2>Sua área de Farmácia é…</h2>
+  <div class="area" id="areaName"></div>
+  <p id="areaText"></p>
+  <div class="scorebox">
+    <strong>Seu perfil</strong>
+    <div id="scores"></div>
+  </div>
+  <button class="primary" id="restart" type="button">🔄 Refazer teste</button>
+</section>
+</main>
+
+<footer>Projeto Conexão Futuro — Feira de Profissões 2026</footer>
+
+<script>
+const areas = {
+  "Farmácia Clínica": {icon:"🩺", text:"Você parece gostar de cuidar diretamente das pessoas, acompanhar tratamentos e transformar conhecimento sobre medicamentos em cuidado individualizado."},
+  "Análises Clínicas": {icon:"🔬", text:"Seu perfil combina com investigação, precisão e interpretação de informações laboratoriais para ajudar na compreensão da saúde."},
+  "Indústria Farmacêutica": {icon:"🏭", text:"Você demonstra interesse por tecnologia, processos, inovação e pela produção de medicamentos com qualidade e segurança."},
+  "Cosmetologia": {icon:"✨", text:"Você tem afinidade com beleza, autocuidado, formulações e desenvolvimento de soluções que unem ciência e bem-estar."},
+  "Farmácia Hospitalar": {icon:"🏥", text:"Organização, segurança e trabalho em equipe aparecem fortes no seu perfil — características importantes na atuação farmacêutica hospitalar."},
+  "Pesquisa e Desenvolvimento": {icon:"💡", text:"Curiosidade, criatividade e vontade de descobrir coisas novas apontam para um perfil voltado à pesquisa e à inovação em saúde."}
+};
+
+const questions = [
+ {q:"Em um projeto de escola, qual atividade você escolheria?", a:[
+  ["Conversar com pessoas e entender suas necessidades","Farmácia Clínica"],
+  ["Investigar resultados e encontrar padrões","Análises Clínicas"],
+  ["Criar e testar um processo para produzir algo","Indústria Farmacêutica"],
+  ["Desenvolver uma ideia ligada a beleza e autocuidado","Cosmetologia"]
+ ]},
+ {q:"O que mais desperta sua curiosidade?", a:[
+  ["Como um medicamento ajuda uma pessoa específica","Farmácia Clínica"],
+  ["O que uma amostra pode revelar sobre o organismo","Análises Clínicas"],
+  ["Como um produto é desenvolvido e fabricado em escala","Indústria Farmacêutica"],
+  ["Como criar uma formulação cosmética eficaz","Cosmetologia"]
+ ]},
+ {q:"Você se imagina trabalhando principalmente…", a:[
+  ["Em contato próximo com pacientes e profissionais de saúde","Farmácia Clínica"],
+  ["Com equipamentos, amostras e resultados laboratoriais","Análises Clínicas"],
+  ["Em ambientes de produção, qualidade ou tecnologia","Indústria Farmacêutica"],
+  ["Com produtos de beleza, pele, cabelos e formulações","Cosmetologia"]
+ ]},
+ {q:"Qual característica mais combina com você?", a:[
+  ["Escuta e empatia","Farmácia Clínica"],
+  ["Atenção aos detalhes","Análises Clínicas"],
+  ["Organização e foco em processos","Indústria Farmacêutica"],
+  ["Criatividade e interesse por estética","Cosmetologia"]
+ ]},
+ {q:"Quando aparece um problema, sua primeira reação costuma ser…", a:[
+  ["Pensar em como aquilo afeta a pessoa","Farmácia Clínica"],
+  ["Buscar dados para entender a causa","Análises Clínicas"],
+  ["Organizar as etapas para resolver","Indústria Farmacêutica"],
+  ["Pensar em uma solução nova e diferente","Pesquisa e Desenvolvimento"]
+ ]},
+ {q:"Qual ambiente parece mais interessante?", a:[
+  ["Consultório, clínica ou serviço de saúde","Farmácia Clínica"],
+  ["Laboratório de análises","Análises Clínicas"],
+  ["Fábrica e áreas de controle de qualidade","Indústria Farmacêutica"],
+  ["Laboratório de pesquisa e inovação","Pesquisa e Desenvolvimento"]
+ ]},
+ {q:"Em uma equipe, você normalmente seria a pessoa que…", a:[
+  ["Cuida para que todos sejam bem atendidos","Farmácia Hospitalar"],
+  ["Confere informações e evita erros","Análises Clínicas"],
+  ["Garante que processos sejam seguidos corretamente","Indústria Farmacêutica"],
+  ["Propõe novas ideias e experimentos","Pesquisa e Desenvolvimento"]
+ ]},
+ {q:"Qual desafio parece mais interessante?", a:[
+  ["Ajudar a tornar o uso de medicamentos mais seguro","Farmácia Clínica"],
+  ["Descobrir o que está acontecendo a partir de exames","Análises Clínicas"],
+  ["Garantir qualidade e segurança na produção de medicamentos","Farmácia Hospitalar"],
+  ["Criar uma nova solução para saúde e bem-estar","Pesquisa e Desenvolvimento"]
+ ]},
+ {q:"Qual assunto você teria mais vontade de estudar?", a:[
+  ["Medicamentos e acompanhamento de pacientes","Farmácia Clínica"],
+  ["Bioquímica, microbiologia e exames","Análises Clínicas"],
+  ["Gestão, produção e controle de qualidade","Indústria Farmacêutica"],
+  ["Formulações, pele e ativos cosméticos","Cosmetologia"]
+ ]},
+ {q:"No futuro, o que mais faria você sentir que seu trabalho valeu a pena?", a:[
+  ["Perceber que uma pessoa foi melhor cuidada","Farmácia Clínica"],
+  ["Contribuir para identificar ou compreender um problema de saúde","Análises Clínicas"],
+  ["Ver um produto seguro e de qualidade chegar a muitas pessoas","Indústria Farmacêutica"],
+  ["Participar da criação de algo novo que gere impacto","Pesquisa e Desenvolvimento"]
+ ]}
+];
+
+let current=0;
+let answers=Array(questions.length).fill(null);
+
+const qEl=document.getElementById("question"), optsEl=document.getElementById("options");
+const next=document.getElementById("next"), back=document.getElementById("back");
+
+function render(){
+  const item=questions[current];
+  qEl.textContent=item.q;
+  optsEl.innerHTML="";
+  item.a.forEach(([text,area])=>{
+    const b=document.createElement("button");
+    b.type="button"; b.className="option"; b.textContent=text;
+    if(answers[current]===area) b.classList.add("selected");
+    b.onclick=()=>{answers[current]=area; [...optsEl.children].forEach(x=>x.classList.remove("selected")); b.classList.add("selected"); next.disabled=false;};
+    optsEl.appendChild(b);
+  });
+  document.getElementById("counter").textContent=`Pergunta ${current+1} de ${questions.length}`;
+  const pct=Math.round(((current+1)/questions.length)*100);
+  document.getElementById("percent").textContent=pct+"%";
+  document.getElementById("progress").style.width=pct+"%";
+  back.disabled=current===0;
+  next.textContent=current===questions.length-1?"Ver meu resultado ✨":"Próxima →";
+  next.disabled=!answers[current];
+}
+function showResult(){
+  const scores={};
+  Object.values(areas).forEach((_,i)=>{});
+  answers.forEach(a=>{if(a)scores[a]=(scores[a]||0)+1});
+  const ranked=Object.entries(scores).sort((a,b)=>b[1]-a[1]);
+  const winner=ranked[0][0];
+  document.getElementById("quiz").classList.add("hidden");
+  document.getElementById("result").classList.remove("hidden");
+  document.querySelector(".result-icon").textContent=areas[winner].icon;
+  document.getElementById("areaName").textContent=winner;
+  document.getElementById("areaText").textContent=areas[winner].text;
+  const scoresEl=document.getElementById("scores"); scoresEl.innerHTML="";
+  ranked.forEach(([name,n])=>{
+    const pct=Math.round(n/questions.length*100);
+    scoresEl.innerHTML+=`<div style="margin-top:13px"><div style="display:flex;justify-content:space-between;font-size:13px"><span>${name}</span><strong>${pct}%</strong></div><div class="bar"><span style="width:${pct}%"></span></div></div>`;
+  });
+}
+next.onclick=()=>{if(current<questions.length-1){current++;render()}else showResult()};
+back.onclick=()=>{if(current>0){current--;render()}};
+document.getElementById("restart").onclick=()=>{current=0;answers=Array(questions.length).fill(null);document.getElementById("result").classList.add("hidden");document.getElementById("quiz").classList.remove("hidden");render();window.scrollTo({top:0,behavior:"smooth"})};
+render();
+</script>
+</body>
+</html>
